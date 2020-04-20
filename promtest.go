@@ -10,21 +10,29 @@ import (
 
 // TestRegistry is a prometheus registry meant to be used for testing
 type TestRegistry struct {
-	*prometheus.Registry
+	g prometheus.Gatherer
 	t *testing.T
 }
 
 // NewTestRegistry allocates and initializes a new TestRegistry
 func NewTestRegistry(t *testing.T) *TestRegistry {
 	return &TestRegistry{
-		Registry: prometheus.NewPedanticRegistry(),
-		t:        t,
+		g: prometheus.NewPedanticRegistry(),
+		t: t,
+	}
+}
+
+// NewTestRegistryWithGatherer allocates and initializes a new TestRegistry with an explicit Gatherer
+func NewTestRegistryWithGatherer(t *testing.T, g prometheus.Gatherer) *TestRegistry {
+	return &TestRegistry{
+		g: g,
+		t: t,
 	}
 }
 
 // TakeSnapshot takes a snapshot of the current values of metrics for testing
 func (r *TestRegistry) TakeSnapshot() (*Snapshot, error) {
-	metrics, err := r.Registry.Gather()
+	metrics, err := r.g.Gather()
 	if err != nil {
 		return nil, err
 	}
